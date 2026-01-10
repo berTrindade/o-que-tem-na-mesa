@@ -176,7 +176,7 @@ export default async function PostPage({ params }: Props) {
           <ShareButtons 
             title={post.title} 
             slug={params.slug} 
-            image={post.ogImage || post.featuredImage}
+            image={post.ogImage || post.featuredImage || undefined}
           />
         </div>
       </div>
