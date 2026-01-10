@@ -1,0 +1,60 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: "#895b33",
+          50: "#faf6f3",
+          100: "#f3ebe3",
+          200: "#e6d4c4",
+          300: "#d5b89e",
+          400: "#c19574",
+          500: "#895b33",
+          600: "#7a512d",
+          700: "#664428",
+          800: "#533822",
+          900: "#452f1d",
+        },
+        secondary: {
+          DEFAULT: "#46594c",
+          50: "#f4f6f4",
+          100: "#e6eae7",
+          200: "#cdd5cf",
+          300: "#a9b7ad",
+          400: "#7e9284",
+          500: "#46594c",
+          600: "#3d4d42",
+          700: "#334037",
+          800: "#2b342e",
+          900: "#242c27",
+        },
+        accent: {
+          DEFAULT: "#6e482f",
+          50: "#f9f5f3",
+          100: "#f1e9e3",
+          200: "#e2d0c4",
+          300: "#cfb19d",
+          400: "#b88b6d",
+          500: "#6e482f",
+          600: "#623f29",
+          700: "#523523",
+          800: "#432c1d",
+          900: "#382519",
+        },
+        background: "#ffffff",
+        surface: "#ffffff",
+      },
+      fontFamily: {
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        serif: ["var(--font-playfair)", "Georgia", "serif"],
+      },
+    },
+  },
+  plugins: [require("@tailwindcss/typography")],
+};
