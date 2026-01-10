@@ -57,7 +57,7 @@ export default async function PostPage({ params }: Props) {
   }
 
   // Get related posts (same category)
-  let relatedPosts = [];
+  let relatedPosts: typeof post[] = [];
   if (post.categories && post.categories.length > 0) {
     try {
       const response = await getPosts({
