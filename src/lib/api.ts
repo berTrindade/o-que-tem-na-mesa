@@ -124,13 +124,13 @@ export async function getPosts(params?: {
   const query = searchParams.toString();
   return fetchAPI<PaginatedResponse<PostWithRelations>>(
     `/posts${query ? `?${query}` : ""}`,
-    { revalidate: 60, tags: ["posts"] }
+    { revalidate: 0, tags: ["posts"] }
   );
 }
 
 export async function getPost(slug: string): Promise<PostWithRelations> {
   return fetchAPI<PostWithRelations>(`/posts/${slug}`, {
-    revalidate: 60,
+    revalidate: 0,
     tags: ["posts", `post-${slug}`],
   });
 }
