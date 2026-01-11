@@ -124,13 +124,13 @@ export async function getPosts(params?: {
   const query = searchParams.toString();
   return fetchAPI<PaginatedResponse<PostWithRelations>>(
     `/posts${query ? `?${query}` : ""}`,
-    { revalidate: 0, tags: ["posts"] }
+    { revalidate: 10, tags: ["posts"] }
   );
 }
 
 export async function getPost(slug: string): Promise<PostWithRelations> {
   return fetchAPI<PostWithRelations>(`/posts/${slug}`, {
-    revalidate: 0,
+    revalidate: 10,
     tags: ["posts", `post-${slug}`],
   });
 }
@@ -150,7 +150,7 @@ export async function getPostWithDraft(
     endpoint,
     {
       // Don't cache in draft mode
-      revalidate: isDraftMode ? 0 : 60,
+      revalidate: isDraftMode ? 0 : 10,
       tags: isDraftMode ? [] : ["posts", `post-${slug}`],
     }
   );
