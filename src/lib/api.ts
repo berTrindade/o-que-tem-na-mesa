@@ -34,37 +34,60 @@ async function fetchAPI<T>(
 ): Promise<T> {
   const url = `${API_URL}${endpoint}`;
 
-  const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      "X-Tenant-Slug": TENANT_SLUG,
-    },
-    next: {
-      revalidate: options.revalidate ?? 60,
-      tags: options.tags,
-    },
-  });
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+        "X-Tenant-Slug": TENANT_SLUG,
+      },
+      next: {
+        revalidate: options.revalidate ?? 60,
+        tags: options.tags,
+      },
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
+    // Check if response is JSON
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      console.error(`API returned non-JSON response for ${endpoint}`);
+      throw new ContentClientError(
+        "API returned non-JSON response",
+        response.status,
+        "INVALID_RESPONSE"
+      );
+    }
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new ContentClientError(
+        error.error?.message || `HTTP ${response.status}`,
+        response.status,
+        error.error?.code
+      );
+    }
+
+    const data: ApiResponse<T> = await response.json();
+
+    if (!data.success) {
+      throw new ContentClientError(
+        data.error?.message || "Request failed",
+        400,
+        data.error?.code
+      );
+    }
+
+    return data.data as T;
+  } catch (error) {
+    if (error instanceof ContentClientError) {
+      throw error;
+    }
+    console.error(`Failed to fetch data:`, error);
     throw new ContentClientError(
-      error.error?.message || `HTTP ${response.status}`,
-      response.status,
-      error.error?.code
+      "Failed to connect to API",
+      503,
+      "API_UNAVAILABLE"
     );
   }
-
-  const data: ApiResponse<T> = await response.json();
-
-  if (!data.success) {
-    throw new ContentClientError(
-      data.error?.message || "Request failed",
-      400,
-      data.error?.code
-    );
-  }
-
-  return data.data as T;
 }
 
 // ============================================
@@ -112,11 +135,37 @@ export async function getPost(slug: string): Promise<PostWithRelations> {
   });
 }
 
+/**
+ * Get a post with draft support.
+ * When Draft Mode is enabled, this will fetch from /draft/posts/[slug]
+ * which returns posts regardless of their publication status.
+ */
+export async function getPostWithDraft(
+  slug: string,
+  isDraftMode: boolean
+): Promise<PostWithRelations & { _preview?: boolean; _isDraft?: boolean }> {
+  const endpoint = isDraftMode ? `/draft/posts/${slug}` : `/posts/${slug}`;
+  
+  return fetchAPI<PostWithRelations & { _preview?: boolean; _isDraft?: boolean }>(
+    endpoint,
+    {
+      // Don't cache in draft mode
+      revalidate: isDraftMode ? 0 : 60,
+      tags: isDraftMode ? [] : ["posts", `post-${slug}`],
+    }
+  );
+}
+
 export async function getPostSlugs(): Promise<string[]> {
-  return fetchAPI<string[]>("/posts/slugs", {
-    revalidate: 60,
-    tags: ["posts"],
-  });
+  try {
+    return await fetchAPI<string[]>("/posts/slugs", {
+      revalidate: 60,
+      tags: ["posts"],
+    });
+  } catch {
+    // Return empty array if API is unavailable (allows build to complete)
+    return [];
+  }
 }
 
 export async function getFeaturedPosts(): Promise<PostWithRelations[]> {

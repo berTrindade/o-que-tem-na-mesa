@@ -2,9 +2,10 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { draftMode } from "next/headers";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getPost, getPostSlugs, getPosts } from "@/lib/api";
+import { getPost, getPostWithDraft, getPostSlugs, getPosts } from "@/lib/api";
 import { formatDate, getReadingTime } from "@/lib/utils";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { PostCard } from "@/components/PostCard";
@@ -44,9 +45,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PostPage({ params }: Props) {
+  // Check if Draft Mode is enabled
+  const draft = await draftMode();
+  const isDraftMode = draft.isEnabled;
+
   let post;
   try {
-    post = await getPost(params.slug);
+    post = await getPostWithDraft(params.slug, isDraftMode);
   } catch (error) {
     console.error("Failed to fetch post:", error);
     notFound();
@@ -55,6 +60,8 @@ export default async function PostPage({ params }: Props) {
   if (!post) {
     notFound();
   }
+
+  const isDraft = post._isDraft || post.status !== "PUBLISHED";
 
   // Get related posts (same category)
   let relatedPosts: typeof post[] = [];
@@ -72,6 +79,27 @@ export default async function PostPage({ params }: Props) {
 
   return (
     <div className="animate-fade-in">
+      {/* Draft Mode Banner */}
+      {isDraftMode && (
+        <div className="bg-amber-500 text-amber-950 text-center py-3 px-4 sticky top-0 z-50">
+          <div className="flex items-center justify-center gap-4">
+            <span className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-950 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-950" />
+              </span>
+              <strong>Modo Preview</strong>
+              {isDraft && <span className="text-sm">(Rascunho)</span>}
+            </span>
+            <a
+              href="/api/draft/disable?redirect=/"
+              className="bg-amber-950 text-amber-100 px-4 py-1 rounded-full text-sm font-medium hover:bg-amber-900 transition-colors"
+            >
+              Sair do Preview
+            </a>
+          </div>
+        </div>
+      )}
     <article>
       {/* Hero */}
       <header className="bg-surface">
