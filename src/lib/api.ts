@@ -10,7 +10,7 @@ import {
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-const TENANT_SLUG = process.env.NEXT_PUBLIC_TENANT_SLUG || "wife-product";
+const TENANT_SLUG = process.env.NEXT_PUBLIC_TENANT_SLUG || "o-que-tem-na-mesa";
 
 class ContentClientError extends Error {
   constructor(
