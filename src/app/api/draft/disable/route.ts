@@ -1,6 +1,9 @@
 import { draftMode } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
+// Force Node.js runtime for consistency
+export const runtime = "nodejs";
+
 /**
  * GET /api/draft/disable
  * 
