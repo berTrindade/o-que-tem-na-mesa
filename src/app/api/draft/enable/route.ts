@@ -2,6 +2,9 @@ import { draftMode } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 
+// Force Node.js runtime (required for crypto module)
+export const runtime = "nodejs";
+
 // Validate the preview token
 function validatePreviewToken(
   token: string,
